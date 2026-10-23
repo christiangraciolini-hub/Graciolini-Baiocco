@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Mia Chat WebSocket</title>
+  <style>
+    /* ==========================================
+       CSS AVANZATO (CYBERPUNK / GLASSMORPHISM)
+       ========================================== */
+    :root {
+      --bg-dark: #070913;
+      --glass-bg: rgba(18, 24, 43, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --neon-cyan: #00f3ff;
+      --neon-pink: #ff007f;
+      --neon-purple: #9d00ff;
+      --glow-cyan: 0 0 20px rgba(0, 243, 255, 0.4);
+      --glow-pink: 0 0 20px rgba(255, 0, 127, 0.4);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg-dark);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #ffffff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Sfondo animato con orbi luminosi e griglia */
+    body::before, body::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: -2;
+      animation: pulseOrbs 8s infinite alternate ease-in-out;
+    }
+
+    body::before {
+      width: 45vw;
+      height: 45vw;
+      background: radial-gradient(circle, var(--neon-purple), transparent 70%);
+      top: -10%;
+      left: -10%;
+    }
+
+    body::after {
+      width: 40vw;
+      height: 40vw;
+      background: radial-gradient(circle, var(--neon-cyan), transparent 70%);
+      bottom: -10%;
+      right: -10%;
+      animation-delay: -4s;
+    }
+
+    @keyframes pulseOrbs {
+      0% { transform: scale(1) translate(0, 0); opacity: 0.6; }
+      100% { transform: scale(1.2) translate(40px, 30px); opacity: 0.9; }
+    }
+
+    /* Contenitore principale della chat */
+    .chat-box {
+      width: min(92vw, 480px);
+      background: var(--glass-bg);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 
+        0 30px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      position: relative;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #fff, var(--neon-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* Sezione connettività */
+    .connessione {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: var(--glow-cyan);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(157, 0, 255, 0.4);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.6);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    /* Area dei messaggi */
+    #messaggi {
+      width: 100%;
+      height: 300px;
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.25);
+      overflow-y: auto;
+      padding: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+
+    /* Scrollbar personalizzata */
+    #messaggi::-webkit-scrollbar {
+      width: 5px;
+    }
+    #messaggi::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
+
+    /* Stili per le varie tipologie di messaggi */
+    #messaggi p {
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      word-break: break-word;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .mio-messaggio {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+      color: #ffffff;
+      border-bottom-right-radius: 2px !important;
+      box-shadow: var(--glow-pink);
+      max-width: 80%;
+    }
+
+    .messaggio-ricevuto {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      color: #ffffff;
+      border-bottom-left-radius: 2px !important;
+      backdrop-filter: blur(10px);
+      max-width: 80%;
+    }
+
+    .sistema {
+      align-self: center;
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      color: var(--neon-cyan);
+      font-size: 0.75rem !important;
+      padding: 4px 12px !important;
+      border-radius: 20px !important;
+      font-style: normal !important;
+      letter-spacing: 0.5px;
+    }
+
+    /* Area di invio inferiore */
+    .chat-box > div:last-child {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-box > div:last-child input {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-box">
+    <h2>Chat Client</h2>
+
+    <!-- Dati di connessione -->
+    <div class="connessione">
+      <input type="text" id="ipServer" value="ws://localhost:8080" placeholder="Indirizzo server">
+      <input type="text" id="nomeUtente" placeholder="Il tuo nome" value="Mario">
+      <button onclick="connetti()">Connetti</button>
+    </div>
+
+    <!-- Area dove compaiono i messaggi -->
+    <div id="messaggi"></div>
+
+    <!-- Invio messaggi -->
+    <div>
+      <input type="text" id="testoMessaggio" placeholder="Scrivi un messaggio...">
+      <button onclick="inviaMessaggio()">Invia</button>
+    </div>
+  </div>
+
+  <script>
+    let socket;
+
+    // Funzione per connettersi al server del tuo amico
+    function connetti() {
+      let url = document.getElementById("ipServer").value;
+
+      // Creiamo la connessione WebSocket
+      socket = new WebSocket(url);
+
+      // Quando la connessione si apre
+      socket.onopen = function() {
+        stampaMessaggio("Connesso al server!", "sistema");
+      };
+
+      // Quando arrivano messaggi dal server
+      socket.onmessage = function(event) {
+        stampaMessaggio("Amico: " + event.data, "messaggio-ricevuto");
+      };
+
+      // Se la connessione si chiude
+      socket.onclose = function() {
+        stampaMessaggio("Disconnesso dal server.", "sistema");
+      };
+
+      // Se c'è un errore
+      socket.onerror = function() {
+        stampaMessaggio("Errore di connessione!", "sistema");
+      };
+    }
+
+    // Funzione per inviare il messaggio
+    function inviaMessaggio() {
+      let testoInput = document.getElementById("testoMessaggio");
+      let nome = document.getElementById("nomeUtente").value;
+      let testo = testoInput.value;
+
+      // Controlliamo che il testo non sia vuoto e che siamo connessi
+      if (testo !== "" && socket && socket.readyState === WebSocket.OPEN) {
+        
+        // Messaggio semplice da inviare: "Nome: Messaggio"
+        let messaggioCompleto = nome + ": " + testo;
+
+        socket.send(messaggioCompleto); // Invia al server
+        stampaMessaggio("Tu: " + testo, "mio-messaggio"); // Mostra a schermo
+
+        testoInput.value = ""; // Svuota la casella di testo
+      }
+    }
+
+    // Funzione di supporto per aggiungere il testo nella finestra della chat
+    function stampaMessaggio(testo, classeCss) {
+      let areaMessaggi = document.getElementById("messaggi");
+      let p = document.createElement("p");
+      p.className = classeCss;
+      p.textContent = testo;
+      areaMessaggi.appendChild(p);
+
+      // Scorri in basso in automatico
+      areaMessaggi.scrollTop = areaMessaggi.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
