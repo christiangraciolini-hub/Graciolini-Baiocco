@@ -1,0 +1,33 @@
+# inserire indirizzo 
+
+## prompt inviato
+
+Devo creare un client chat WebSocket in HTML e JavaScript per collegarmi al server della LIM della scuola all'indirizzo ws://10.1.0.52:8090/chat26/5i.
+
+## risposta
+Notando la sintassi, c'è solo un piccolo refuso di battitura nei punti (c'è un doppio punto tra 0 e 52, e un punto prima di 5i). L'indirizzo corretto da usare deve avere il prefisso ws:// davanti.
+
+Ripulendo i punti di troppo, l'indirizzo da inserire diventa:
+Plaintext
+
+ws://10.1.0.52:8090/chat26/5i
+
+Come testarlo subito nel tuo client:
+
+    Apri il file scheletro.html nel browser (doppio clic sul file o aprilo da Firefox).
+
+    Nella casella di testo in alto dedicata all'IP / URL del Server, incolla:
+    ws://10.1.0.52:8090/chat26/5i
+
+    Clicca sul pulsante Connetti.
+
+Cosa aspettarsi:
+
+    Se si connette: Vedrai comparire nella finestra della chat il messaggio verde/azzurro di sistema "Connesso al server!". A quel punto prova a scrivere un messaggio e cliccare Invia per vedere se il server lo riceve!
+
+    Se non si connette: Assicurati che il tuo computer sia collegato alla stessa rete Wi-Fi/LAN della scuola a cui è collegata la LIM (altrimenti l'IP 10.1.0.52 non sarà raggiungibile).
+
+Facci sapere se cliccando su Connetti ti dà conferma di connessione o se restituisce qualche errore!
+
+## cosa ho imparato
+ ho capito come inserire all' interno del mio html gli indirizzi per inviare un messaggio alla lim della classe tramite indirizzo ip e percorso

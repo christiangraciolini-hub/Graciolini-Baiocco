@@ -1,0 +1,23 @@
+## Implementazione del Protocollo
+
+# prompt inviato
+
+
+"Il prof ci ha detto  di rispettare un protocollo di messaggistica:
+- Login all'apertura: L|id_utente|password\n
+- Ricezione risposte di stato: C|testo
+- Ricezione ed invio messaggi: M|id_utente|timestamp|corpo\n
+- Ricezione utenti online: U|id1|id2|...
+
+##risposta
+
+aggiornato le funzioni JavaScript in 'scheletro.html':
+- In 'ws.onopen' viene trasmesso il comando di login ("L|christian|123\n").
+- In 'gestoreRicezione' sono stati introdotti i controlli 'startsWith()' per identificare i prefissi ('C|', 'M|', 'U|') e separare i dati con 'split("|")'.
+- In 'inviaAlServer()' il messaggio viene assemblato includendo la data in formato ISO 8601 ed terminando con il carattere di a capo '\n'.
+
+(codice aggiornato)...
+
+##cosa ho imparato
+
+ho capito a cosa servisse il protocollo di comunicazione
