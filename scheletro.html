@@ -3,73 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Comunicazione via Websocket - Graciolini & Baiocco</title>
+  <title>Chat WebSocket - 5ª I</title>
   <link rel="stylesheet" href="style.css">
   <script>
     "use strict";
 
-    let ws = new WebSocket("ws://10.1.0.52:8090/chat26/5i");
+    const INDIRIZZO_SERVER = "ws://10.1.0.52:8090/chat26/5i";
 
-    ws.onopen = function() {
-        let idUtente = "christian";
-        let password = "123";
-        ws.send("L|" + idUtente + "|" + password + "\n");
-    };
+    let ws = null;
+    let autenticato = false;
+    let nomeUtente = "";
 
-    function gestoreRicezione(messaggioRicevuto){
-        let data = messaggioRicevuto.data;
-        let areaRicezione = document.getElementById("ricezione");
+    const el = id => document.getElementById(id);
 
-        if (data.startsWith("C|")) {
-            areaRicezione.textContent += "[SISTEMA] " + data.substring(2);
-        } else if (data.startsWith("M|")) {
-            let parti = data.split("|");
-            let mittente = parti[1];
-            let corpo = parti[3];
-            areaRicezione.textContent += mittente + ": " + corpo;
-        } else if (data.startsWith("U|")) {
-            let utenti = data.substring(2).trim().split("|").join(", ");
-            areaRicezione.textContent += "[ONLINE] " + utenti + "\n";
-        } else {
-            areaRicezione.textContent += data;
-        }
-
-        areaRicezione.scrollTop = areaRicezione.scrollHeight;
+    function scriviNellArea(riga) {
+      const area = el("ricezione");
+      area.textContent += riga + "\n";
+      area.scrollTop = area.scrollHeight;
     }
 
-    ws.onmessage = gestoreRicezione;
-
-    function inviaAlServer(){
-        let campoMsg = document.getElementById("msg");
-        let testo = campoMsg.value;
-
-        if (testo !== "") {
-            let idUtente = "christian";
-            let timestamp = new Date().toISOString();
-            let messaggioFormattato = "M|" + idUtente + "|" + timestamp + "|" + testo + "\n";
-
-            ws.send(messaggioFormattato);
-            campoMsg.value = "";
-        }
+    function mostraSchermata(nome) {
+      el("login").style.display = (nome === "login") ? "block" : "none";
+      el("chat").style.display  = (nome === "chat")  ? "block" : "none";
     }
 
-    function chiudiLaConnessione(){
+    const costruisciLogin = (nome, psw) => "L|" + nome + "|" + psw + "\n";
+
+    function costruisciMessaggio(nome, corpo) {
+      return "M|" + nome + "|" + new Date().toISOString() + "|" + corpo + "\n";
+    }
+
+    function allaRicezione(evento) {
+      const testo = evento.data.trim();
+
+      if (!autenticato) {
+        if (testo.includes("errat")) {
+          el("errore").textContent = "Il server ha risposto: " + testo;
+          return;
+        }
+        autenticato = true;
+        el("errore").textContent = "";
+        mostraSchermata("chat");
+      }
+
+      scriviNellArea("ricevuto ← " + testo);
+    }
+
+    function apriConnessione(primoMessaggio) {
+      ws = new WebSocket(INDIRIZZO_SERVER);
+      ws.onmessage = allaRicezione;
+      ws.onclose = allaChiusura;
+      ws.onerror = function() {
+        el("errore").textContent = "Impossibile collegarsi al server (sei sulla rete della scuola?)";
+      };
+      ws.onopen = function() {
+        ws.send(primoMessaggio);
+      };
+    }
+
+    function allaChiusura() {
+      if (autenticato) {
+        autenticato = false;
+        mostraSchermata("login");
+        el("errore").textContent = "Connessione chiusa: rifai il login per rientrare";
+      }
+    }
+
+    function accedi() {
+      const nome = el("username").value.trim();
+      const psw = el("password").value;
+
+      if (nome === "" || psw === "") {
+        el("errore").textContent = "Inserisci nome utente e password";
+        return;
+      }
+
+      nomeUtente = nome;
+      el("errore").textContent = "Login inviato, attendo la risposta del server...";
+      const loginDaInviare = costruisciLogin(nome, psw);
+
+      if (ws !== null && ws.readyState === WebSocket.OPEN) {
+        ws.send(loginDaInviare);
+      } else {
+        apriConnessione(loginDaInviare);
+      }
+    }
+
+    function inviaMessaggio() {
+      const testo = el("msg").value.trim();
+      if (testo === "") return;
+
+      const messaggio = costruisciMessaggio(nomeUtente, testo);
+      ws.send(messaggio);
+      scriviNellArea("inviato → " + messaggio.trim());
+      el("msg").value = "";
+    }
+
+    function esci() {
+      if (ws !== null) {
         ws.close();
-        document.getElementById("ricezione").textContent += "--- Connessione chiusa ---\n";
+      }
     }
   </script>
 </head>
 <body>
 
-  <div class="chat-box">
-    <h2>Comunicazione via Websocket</h2>
+  <div id="login" class="box">
+    <h2>Login Chat WebSocket</h2>
+    <input id="username" type="text" placeholder="Nome utente">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="accedi()">Entra</button>
+    <div id="errore"></div>
+  </div>
 
+  <div id="chat" class="box" style="display:none">
     <textarea id="ricezione" readonly></textarea>
-
-    <div class="controlli">
+    <div class="riga">
       <input id="msg" type="text" placeholder="Scrivi un messaggio...">
-      <button onClick="inviaAlServer()">Invia!</button>
-      <button class="btn-chiudi" onClick="chiudiLaConnessione()">Chiudi</button>
+      <button onclick="inviaMessaggio()">invia!</button>
+      <button class="btn-chiudi" onclick="esci()">chiudi</button>
     </div>
   </div>
 
