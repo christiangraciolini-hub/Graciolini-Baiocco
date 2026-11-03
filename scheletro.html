@@ -104,6 +104,28 @@
         ws.close();
       }
     }
+
+    // Gestione della pressione del tasto "Invio"
+    document.addEventListener("DOMContentLoaded", function() {
+      // Invio messaggio con Invio
+      el("msg").addEventListener("keydown", function(evento) {
+        if (evento.key === "Enter") {
+          evento.preventDefault();
+          inviaMessaggio();
+        }
+      });
+
+      // Login con Invio nei campi di testo
+      const gestioneLoginInvio = function(evento) {
+        if (evento.key === "Enter") {
+          evento.preventDefault();
+          accedi();
+        }
+      };
+
+      el("username").addEventListener("keydown", gestioneLoginInvio);
+      el("password").addEventListener("keydown", gestioneLoginInvio);
+    });
   </script>
 </head>
 <body>
