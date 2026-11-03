@@ -1,0 +1,13 @@
+## separazione file html e CSS
+
+# prompt
+ Voglio riorganizzare il codice del client WebSocket separando la struttura HTML dal CSS. 
+Estrapola il codice presente nel tag <style> del file 'scheletro.html' e crea un file esterno 'style.css'. Collega poi il nuovo file CSS nell'head di 'scheletro.html'
+
+# risposta
+
+estrapolate tutte le regole di stile per la chat, i pulsanti e la textarea spostandole nel nuovo file 'style.css'.
+ Nel file 'scheletro.html' ha rimosso il tag <style> e ha inserito il tag di collegamento nell'head: <link rel="stylesheet" href="stylle.css">.
+
+# cosa ho fatto?
+ho sepaparato i file html e css per essere piu organizzati
