@@ -8,20 +8,25 @@
   <script>
     "use strict";
 
+    // Indirizzo IP e porta del server WebSocket della scuola
     const INDIRIZZO_SERVER = "ws://10.1.0.52:8090/chat26/5i";
 
+    // Variabili globali per la connessione e lo stato dell'utente
     let ws = null;
     let autenticato = false;
     let nomeUtente = "";
 
+    // Funzione di utilità per selezionare velocemente gli elementi HTML tramite ID
     const el = id => document.getElementById(id);
 
+    // Funzione per creare e inserire i fumetti dei messaggi nella chat con scorrimento automatico
     function aggiungiMessaggio(mittente, testo, tipo) {
       const area = el("ricezione");
       
       const msgDiv = document.createElement("div");
       msgDiv.classList.add("messaggio", tipo);
 
+      // Aggiunge il nome del mittente sopra il messaggio (se non è un messaggio di sistema)
       if (tipo !== "sistema") {
         const mittenteDiv = document.createElement("div");
         mittenteDiv.classList.add("mittente");
@@ -36,6 +41,7 @@
       testoDiv.classList.add("testo");
       testoDiv.textContent = testo;
 
+      // Genera l'orario corrente nel formato HH:MM
       const oraDiv = document.createElement("div");
       oraDiv.classList.add("ora");
       const adesso = new Date();
@@ -48,26 +54,31 @@
       msgDiv.appendChild(rigaDiv);
       area.appendChild(msgDiv);
 
-      // Auto-scroll automatico verso il basso ad ogni nuovo messaggio
+      // Scorrimento automatico verso il basso all'arrivo di un nuovo messaggio
       setTimeout(() => {
         area.scrollTop = area.scrollHeight;
       }, 50);
     }
 
+    // Funzione per alternare la visibilità tra la schermata di login e la schermata di chat
     function mostraSchermata(nome) {
       el("login").style.display = (nome === "login") ? "flex" : "none";
       el("chat").style.display  = (nome === "chat")  ? "flex" : "none";
     }
 
+    // Funzione per formattare la stringa di login secondo il protocollo (L|username|password)
     const costruisciLogin = (nome, psw) => "L|" + nome + "|" + psw + "\n";
 
+    // Funzione per formattare la stringa del messaggio secondo il protocollo (M|username|data|testo)
     function costruisciMessaggio(nome, corpo) {
       return "M|" + nome + "|" + new Date().toISOString() + "|" + corpo + "\n";
     }
 
+    // Funzione per gestire i dati e i messaggi ricevuti dal server WebSocket
     function allaRicezione(evento) {
       const testoGrezzo = evento.data.trim();
 
+      // Gestione della risposta al primo tentativo di login
       if (!autenticato) {
         if (testoGrezzo.includes("errat")) {
           el("errore").textContent = "Errore: " + testoGrezzo;
@@ -78,6 +89,7 @@
         mostraSchermata("chat");
       }
 
+      // Separazione tra messaggi di testo standard e messaggi di controllo/sistema
       if (testoGrezzo.startsWith("M|")) {
         const parti = testoGrezzo.split("|");
         const mittente = parti[1] || "Utente";
@@ -89,6 +101,7 @@
       }
     }
 
+    // Funzione per aprire la connessione WebSocket e inviare il pacchetto di login
     function apriConnessione(primoMessaggio) {
       ws = new WebSocket(INDIRIZZO_SERVER);
       ws.onmessage = allaRicezione;
@@ -101,6 +114,7 @@
       };
     }
 
+    // Funzione per gestire la disconnessione dal server e riportare l'utente al login
     function allaChiusura() {
       if (autenticato) {
         autenticato = false;
@@ -109,6 +123,7 @@
       }
     }
 
+    // Funzione per convalidare i campi di testo ed effettuare il login
     function accedi() {
       const nome = el("username").value.trim();
       const psw = el("password").value;
@@ -129,6 +144,7 @@
       }
     }
 
+    // Funzione per inviare il messaggio scritto dall'utente al server WebSocket
     function inviaMessaggio() {
       const testo = el("msg").value.trim();
       if (!testo) return;
@@ -138,13 +154,16 @@
       el("msg").value = "";
     }
 
+    // Funzione per chiudere manualmente il socket ed uscire dalla chat
     function esci() {
       if (ws !== null) ws.close();
     }
 
+    // Inizializzazione degli eventi di ascolto tastiera (Invio) al caricamento della pagina
     document.addEventListener("DOMContentLoaded", function() {
       mostraSchermata("login");
 
+      // Invio del messaggio premendo il tasto Invio nella chat
       el("msg").addEventListener("keydown", e => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -152,6 +171,7 @@
         }
       });
 
+      // Invio del form di login premendo Invio sui campi di testo
       const invioLogin = e => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -166,7 +186,7 @@
 </head>
 <body>
 
-  <!-- SCHERMATA LOGIN -->
+  <!-- Struttura della schermata di login iniziale -->
   <div id="login" class="box">
     <div class="login-content">
       <h2>Login Chat WebSocket</h2>
@@ -177,8 +197,9 @@
     </div>
   </div>
 
-  <!-- SCHERMATA CHAT A TUTTO SCHERMO -->
+  <!-- Struttura della schermata della chat principale a tutto schermo -->
   <div id="chat" class="box" style="display:none">
+    <!-- Intestazione superiore con titolo e tasto per uscire -->
     <div class="chat-header">
       <div class="info">
         <div class="avatar">5I</div>
@@ -187,8 +208,10 @@
       <button class="btn-chiudi" onclick="esci()">Esci</button>
     </div>
 
+    <!-- Contenitore scrollabile dei fumetti di testo -->
     <div id="ricezione"></div>
 
+    <!-- Barra inferiore per l'inserimento e l'invio del testo -->
     <div class="riga">
       <input id="msg" type="text" placeholder="Messaggio">
       <button onclick="inviaMessaggio()">Invia</button>
