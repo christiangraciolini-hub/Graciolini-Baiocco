@@ -8,8 +8,7 @@
   <script>
     "use strict";
 
-    /*const INDIRIZZO_SERVER = "ws://10.1.0.52:8090/chat26/5i";*/
-    const INDIRIZZO_SERVER = "ws://10.3.1.174:8080";
+    const INDIRIZZO_SERVER = "ws://10.1.0.52:8090/chat26/5i";
 
     let ws = null;
     let autenticato = false;
@@ -17,15 +16,47 @@
 
     const el = id => document.getElementById(id);
 
-    function scriviNellArea(riga) {
+    function aggiungiMessaggio(mittente, testo, tipo) {
       const area = el("ricezione");
-      area.textContent += riga + "\n";
-      area.scrollTop = area.scrollHeight;
+      
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("messaggio", tipo);
+
+      if (tipo !== "sistema") {
+        const mittenteDiv = document.createElement("div");
+        mittenteDiv.classList.add("mittente");
+        mittenteDiv.textContent = mittente;
+        msgDiv.appendChild(mittenteDiv);
+      }
+
+      const rigaDiv = document.createElement("div");
+      rigaDiv.classList.add("contenuto-riga");
+
+      const testoDiv = document.createElement("div");
+      testoDiv.classList.add("testo");
+      testoDiv.textContent = testo;
+
+      const oraDiv = document.createElement("div");
+      oraDiv.classList.add("ora");
+      const adesso = new Date();
+      oraDiv.textContent = adesso.getHours().toString().padStart(2, '0') + ":" + 
+                           adesso.getMinutes().toString().padStart(2, '0');
+
+      rigaDiv.appendChild(testoDiv);
+      if (tipo !== "sistema") rigaDiv.appendChild(oraDiv);
+
+      msgDiv.appendChild(rigaDiv);
+      area.appendChild(msgDiv);
+
+      // Auto-scroll automatico verso il basso ad ogni nuovo messaggio
+      setTimeout(() => {
+        area.scrollTop = area.scrollHeight;
+      }, 50);
     }
 
     function mostraSchermata(nome) {
-      el("login").style.display = (nome === "login") ? "block" : "none";
-      el("chat").style.display  = (nome === "chat")  ? "block" : "none";
+      el("login").style.display = (nome === "login") ? "flex" : "none";
+      el("chat").style.display  = (nome === "chat")  ? "flex" : "none";
     }
 
     const costruisciLogin = (nome, psw) => "L|" + nome + "|" + psw + "\n";
@@ -35,11 +66,11 @@
     }
 
     function allaRicezione(evento) {
-      const testo = evento.data.trim();
+      const testoGrezzo = evento.data.trim();
 
       if (!autenticato) {
-        if (testo.includes("errat")) {
-          el("errore").textContent = "Il server ha risposto: " + testo;
+        if (testoGrezzo.includes("errat")) {
+          el("errore").textContent = "Errore: " + testoGrezzo;
           return;
         }
         autenticato = true;
@@ -47,7 +78,15 @@
         mostraSchermata("chat");
       }
 
-      scriviNellArea("ricevuto ← " + testo);
+      if (testoGrezzo.startsWith("M|")) {
+        const parti = testoGrezzo.split("|");
+        const mittente = parti[1] || "Utente";
+        const contenuto = parti.slice(3).join("|");
+        const tipo = (mittente === nomeUtente) ? "inviato" : "ricevuto";
+        aggiungiMessaggio(mittente, contenuto, tipo);
+      } else {
+        aggiungiMessaggio("Sistema", testoGrezzo, "sistema");
+      }
     }
 
     function apriConnessione(primoMessaggio) {
@@ -55,7 +94,7 @@
       ws.onmessage = allaRicezione;
       ws.onclose = allaChiusura;
       ws.onerror = function() {
-        el("errore").textContent = "Impossibile collegarsi al server (sei sulla rete della scuola?)";
+        el("errore").textContent = "Errore connessione al server";
       };
       ws.onopen = function() {
         ws.send(primoMessaggio);
@@ -66,7 +105,7 @@
       if (autenticato) {
         autenticato = false;
         mostraSchermata("login");
-        el("errore").textContent = "Connessione chiusa: rifai il login per rientrare";
+        el("errore").textContent = "Connessione chiusa.";
       }
     }
 
@@ -74,13 +113,13 @@
       const nome = el("username").value.trim();
       const psw = el("password").value;
 
-      if (nome === "" || psw === "") {
-        el("errore").textContent = "Inserisci nome utente e password";
+      if (!nome || !psw) {
+        el("errore").textContent = "Inserisci sia nome che password";
         return;
       }
 
       nomeUtente = nome;
-      el("errore").textContent = "Login inviato, attendo la risposta del server...";
+      el("errore").textContent = "Connessione...";
       const loginDaInviare = costruisciLogin(nome, psw);
 
       if (ws !== null && ws.readyState === WebSocket.OPEN) {
@@ -92,59 +131,67 @@
 
     function inviaMessaggio() {
       const testo = el("msg").value.trim();
-      if (testo === "") return;
+      if (!testo) return;
 
       const messaggio = costruisciMessaggio(nomeUtente, testo);
       ws.send(messaggio);
-      scriviNellArea("inviato → " + messaggio.trim());
       el("msg").value = "";
     }
 
     function esci() {
-      if (ws !== null) {
-        ws.close();
-      }
+      if (ws !== null) ws.close();
     }
 
-    // Gestione della pressione del tasto "Invio"
     document.addEventListener("DOMContentLoaded", function() {
-      // Invio messaggio con Invio
-      el("msg").addEventListener("keydown", function(evento) {
-        if (evento.key === "Enter") {
-          evento.preventDefault();
+      mostraSchermata("login");
+
+      el("msg").addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
           inviaMessaggio();
         }
       });
 
-      // Login con Invio nei campi di testo
-      const gestioneLoginInvio = function(evento) {
-        if (evento.key === "Enter") {
-          evento.preventDefault();
+      const invioLogin = e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
           accedi();
         }
       };
 
-      el("username").addEventListener("keydown", gestioneLoginInvio);
-      el("password").addEventListener("keydown", gestioneLoginInvio);
+      el("username").addEventListener("keydown", invioLogin);
+      el("password").addEventListener("keydown", invioLogin);
     });
   </script>
 </head>
 <body>
 
+  <!-- SCHERMATA LOGIN -->
   <div id="login" class="box">
-    <h2>Login Chat WebSocket</h2>
-    <input id="username" type="text" placeholder="Nome utente">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="accedi()">Entra</button>
-    <div id="errore"></div>
+    <div class="login-content">
+      <h2>Login Chat WebSocket</h2>
+      <input id="username" type="text" placeholder="Nome utente">
+      <input id="password" type="password" placeholder="Password">
+      <button onclick="accedi()">Entra</button>
+      <div id="errore"></div>
+    </div>
   </div>
 
+  <!-- SCHERMATA CHAT A TUTTO SCHERMO -->
   <div id="chat" class="box" style="display:none">
-    <textarea id="ricezione" readonly></textarea>
+    <div class="chat-header">
+      <div class="info">
+        <div class="avatar">5I</div>
+        <div class="titolo">Classe 5ª I</div>
+      </div>
+      <button class="btn-chiudi" onclick="esci()">Esci</button>
+    </div>
+
+    <div id="ricezione"></div>
+
     <div class="riga">
-      <input id="msg" type="text" placeholder="Scrivi un messaggio...">
-      <button onclick="inviaMessaggio()">invia!</button>
-      <button class="btn-chiudi" onclick="esci()">chiudi</button>
+      <input id="msg" type="text" placeholder="Messaggio">
+      <button onclick="inviaMessaggio()">Invia</button>
     </div>
   </div>
 

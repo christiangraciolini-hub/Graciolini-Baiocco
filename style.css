@@ -1,175 +1,242 @@
-/* --- RESET & STILI GENERALI --- */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-body {
-  background: linear-gradient(to bottom, #00a884 0px, #00a884 127px, #d1d7db 127px, #d1d7db 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-/* --- CONTENITORE PRINCIPALE --- */
-.box {
-  background-color: #ffffff;
+html, body {
   width: 100%;
-  max-width: 450px;
-  height: 650px;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(11, 20, 26, 0.2);
+  height: 100%;
+  overflow: hidden;
+  background-color: #0b141a;
+}
+
+/* Contenitore a tutto schermo */
+.box {
+  background-color: #111b21;
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
 }
 
-/* --- SCHERMATA DI LOGIN --- */
+/* --- LOGIN --- */
 #login {
-  padding: 50px 35px;
+  padding: 40px 25px;
   text-align: center;
-  background-color: #ffffff;
   justify-content: center;
+  align-items: center;
+}
+
+#login .login-content {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #login h2 {
-  color: #008069;
-  font-size: 26px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-#login::before {
-  content: "💬";
-  font-size: 50px;
-  display: block;
-  margin-bottom: 10px;
+  color: #00a884;
+  font-size: 24px;
+  margin-bottom: 25px;
 }
 
 #login input {
   width: 100%;
   padding: 14px 18px;
-  margin-top: 15px;
-  border: 1.5px solid #e9edef;
-  background-color: #f0f2f5;
-  border-radius: 25px;
+  margin-bottom: 15px;
+  border: 1px solid #2a3942;
+  background-color: #202c33;
+  color: #e9edef;
+  border-radius: 20px;
   outline: none;
   font-size: 15px;
-  transition: all 0.2s ease;
 }
 
 #login input:focus {
   border-color: #00a884;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.15);
 }
 
 #login button {
   width: 100%;
   padding: 14px;
-  margin-top: 25px;
   background-color: #00a884;
-  color: #ffffff;
+  color: #111b21;
   border: none;
-  border-radius: 25px;
+  border-radius: 20px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.2s;
-}
-
-#login button:hover {
-  background-color: #008069;
 }
 
 #errore {
-  color: #ea4335;
-  margin-top: 20px;
+  color: #f15c6d;
+  margin-top: 15px;
   font-size: 14px;
-  font-weight: 500;
 }
 
-/* --- SCHERMATA CHAT --- */
+/* --- CHAT SCURA A TUTTO SCHERMO --- */
 #chat {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  background-color: #efeae2;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0b141a;
 }
 
-/* Area dei messaggi */
-textarea#ricezione {
-  flex: 1;
-  width: 100%;
-  padding: 20px;
-  border: none;
-  /* Pattern stilizzato di sfondo tipo sfumatura WhatsApp */
-  background-color: #efeae2;
-  background-image: radial-gradient(#cbd5e1 1px, transparent 0);
-  background-size: 24px 24px;
-  resize: none;
-  outline: none;
-  font-size: 14.5px;
-  line-height: 1.6;
-  color: #111b21;
-  font-family: inherit;
-}
-
-/* Barra di invio messaggi in basso */
-.riga {
+/* Header in alto */
+.chat-header {
+  background-color: #202c33;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
-  padding: 12px 15px;
-  background-color: #f0f2f5;
+  justify-content: space-between;
+  color: #e9edef;
+  border-bottom: 1px solid #222d34;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.chat-header .info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-header .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #00a884;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #111b21;
+}
+
+.chat-header .titolo {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+/* Area scrollabile messaggi con auto-scroll automatico */
+#ricezione {
+  flex: 1;
+  padding: 20px;
+  background-color: #0b141a;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  border-top: 1px solid #e9edef;
+}
+
+/* Fumetto del messaggio */
+.messaggio {
+  max-width: 65%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14.5px;
+  line-height: 1.4;
+  color: #e9edef;
+  word-wrap: break-word;
+}
+
+/* Ricevuto (Grigio scuro a sinistra) */
+.messaggio.ricevuto {
+  align-self: flex-start;
+  background-color: #202c33;
+  border-top-left-radius: 0;
+}
+
+/* Inviato (Verde scuro a destra) */
+.messaggio.inviato {
+  align-self: flex-end;
+  background-color: #005c4b;
+  border-top-right-radius: 0;
+}
+
+/* Messaggio di sistema */
+.messaggio.sistema {
+  align-self: center;
+  background-color: #182229;
+  color: #8696a0;
+  font-size: 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+/* Nome utente sopra il messaggio */
+.messaggio .mittente {
+  font-size: 12px;
+  font-weight: 600;
+  color: #53bdeb;
+  margin-bottom: 2px;
+}
+
+.messaggio.inviato .mittente {
+  color: #25d366;
+}
+
+.messaggio .contenuto-riga {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.messaggio .testo {
+  flex: 1;
+}
+
+.messaggio .ora {
+  font-size: 10px;
+  color: #8696a0;
+  white-space: nowrap;
+}
+
+/* Barra di invio in basso */
+.riga {
+  background-color: #202c33;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 62px;
+  flex-shrink: 0;
 }
 
 .riga input#msg {
   flex: 1;
+  background-color: #2a3942;
+  border: none;
   padding: 12px 18px;
-  border: 1px solid #ffffff;
-  border-radius: 22px;
-  outline: none;
+  border-radius: 20px;
+  color: #e9edef;
   font-size: 15px;
-  background-color: #ffffff;
-  color: #111b21;
+  outline: none;
 }
 
-.riga input#msg:focus {
-  border-color: #00a884;
+.riga input#msg::placeholder {
+  color: #8696a0;
 }
 
 .riga button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 20px;
   background-color: #00a884;
-  color: #ffffff;
-  font-size: 14px;
+  color: #111b21;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-.riga button:hover {
-  background-color: #008069;
-}
-
-.riga button:active {
-  transform: scale(0.96);
 }
 
 .riga button.btn-chiudi {
   background-color: #ea4335;
-}
-
-.riga button.btn-chiudi:hover {
-  background-color: #c5221f;
+  color: white;
 }
